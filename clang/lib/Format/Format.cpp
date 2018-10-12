@@ -1006,6 +1006,8 @@ template <> struct MappingTraits<FormatStyle> {
     IO.mapOptional("KeepEmptyLinesAtTheStartOfBlocks",
                    Style.KeepEmptyLinesAtTheStartOfBlocks);
     IO.mapOptional("KeepEmptyLinesAtEOF", Style.KeepEmptyLinesAtEOF);
+    IO.mapOptional("KeepLineBreaksForNonEmptyLines",
+                   Style.KeepLineBreaksForNonEmptyLines);
     IO.mapOptional("LambdaBodyIndentation", Style.LambdaBodyIndentation);
     IO.mapOptional("LineEnding", Style.LineEnding);
     IO.mapOptional("MacroBlockBegin", Style.MacroBlockBegin);
@@ -1508,6 +1510,7 @@ FormatStyle getLLVMStyle(FormatStyle::LanguageKind Language) {
   LLVMStyle.JavaScriptWrapImports = true;
   LLVMStyle.KeepEmptyLinesAtEOF = false;
   LLVMStyle.KeepEmptyLinesAtTheStartOfBlocks = true;
+  LLVMStyle.KeepLineBreaksForNonEmptyLines = false;
   LLVMStyle.LambdaBodyIndentation = FormatStyle::LBI_Signature;
   LLVMStyle.LineEnding = FormatStyle::LE_DeriveLF;
   LLVMStyle.MaxEmptyLinesToKeep = 1;
@@ -1625,6 +1628,7 @@ FormatStyle getGoogleStyle(FormatStyle::LanguageKind Language) {
   GoogleStyle.IncludeStyle.IncludeIsMainRegex = "([-_](test|unittest))?$";
   GoogleStyle.IncludeStyle.IncludeBlocks = tooling::IncludeStyle::IBS_Regroup;
   GoogleStyle.IndentCaseLabels = true;
+  GoogleStyle.KeepLineBreaksForNonEmptyLines = false;
   GoogleStyle.KeepEmptyLinesAtTheStartOfBlocks = false;
   GoogleStyle.ObjCBinPackProtocolList = FormatStyle::BPS_Never;
   GoogleStyle.ObjCSpaceAfterProperty = false;
