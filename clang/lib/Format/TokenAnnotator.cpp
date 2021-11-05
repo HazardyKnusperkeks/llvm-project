@@ -251,7 +251,8 @@ private:
       Contexts.back().IsExpression = false;
     } else if (Left->Previous &&
                (Left->Previous->isOneOf(tok::kw_static_assert, tok::kw_while,
-                                        tok::l_paren, tok::comma) ||
+                                        tok::l_paren, tok::comma,
+                                        TT_RequiresClause) ||
                 Left->Previous->isIf() ||
                 Left->Previous->is(TT_BinaryOperator))) {
       // static_assert, if and while usually contain expressions.
@@ -1415,7 +1416,8 @@ private:
             TT_LambdaArrow, TT_NamespaceMacro, TT_OverloadedOperator,
             TT_RegexLiteral, TT_TemplateString, TT_ObjCStringLiteral,
             TT_UntouchableMacroFunc, TT_ConstraintJunctions,
-            TT_StatementAttributeLikeMacro))
+            TT_StatementAttributeLikeMacro, TT_RequiresClause,
+            TT_RequiresExpression))
       CurrentToken->setType(TT_Unknown);
     CurrentToken->Role.reset();
     CurrentToken->MatchingParen = nullptr;

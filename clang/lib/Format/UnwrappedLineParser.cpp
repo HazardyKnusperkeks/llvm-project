@@ -2436,17 +2436,27 @@ void UnwrappedLineParser::parseConcept() {
     return;
   nextToken();
   if (FormatTok->Tok.is(tok::kw_requires)) {
+    FormatTok->setType(TT_RequiresExpression);
     nextToken();
-    parseRequiresExpression(Line->Level);
+    parseRequiresClauseOrExpression(Line->Level);
   } else {
     parseConstraintExpression(Line->Level);
   }
 }
 
-void UnwrappedLineParser::parseRequiresExpression(unsigned int OriginalLevel) {
-  // requires (R range)
+void UnwrappedLineParser::parseRequiresClauseOrExpression(
+    unsigned int OriginalLevel) {
+  // requires (R range) or requires (trait1_v<T> && trait2_v<T>)
+  assert(FormatTok->Previous && FormatTok->Previous->is(tok::kw_requires));
   if (FormatTok->Tok.is(tok::l_paren)) {
+    bool ParsingClause = FormatTok->Previous->is(TT_RequiresClause);
     parseParens();
+    if (ParsingClause &&
+        !FormatTok->Tok.isOneOf(tok::comment, tok::kw_struct, tok::kw_class,
+                                tok::kw_union, tok::l_brace, tok::semi)) {
+      // Only break if we start a function.
+      addUnwrappedLine();
+    }
     if (Style.IndentRequires && OriginalLevel != Line->Level) {
       addUnwrappedLine();
       --Line->Level;
@@ -2480,7 +2490,8 @@ void UnwrappedLineParser::parseConstraintExpression(
       nextToken();
     }
     if (FormatTok->Tok.is(tok::kw_requires)) {
-      parseRequiresExpression(OriginalLevel);
+      FormatTok->setType(TT_RequiresExpression);
+      parseRequiresClauseOrExpression(OriginalLevel);
     }
     if (FormatTok->Tok.is(tok::less)) {
       parseBracedList(/*ContinueOnSemicolons=*/false, /*IsEnum=*/false,
@@ -2526,15 +2537,26 @@ void UnwrappedLineParser::parseRequires() {
   assert(FormatTok->Tok.is(tok::kw_requires) && "'requires' expected");
 
   unsigned OriginalLevel = Line->Level;
-  if (FormatTok->Previous && FormatTok->Previous->is(tok::greater)) {
-    addUnwrappedLine();
-    if (Style.IndentRequires) {
-      Line->Level++;
+  bool SetClause = false;
+  if (FormatTok->Previous) {
+    if (FormatTok->Previous->is(tok::greater)) {
+      FormatTok->setType(TT_RequiresClause);
+      SetClause = true;
+      addUnwrappedLine();
+      if (Style.IndentRequires) {
+        Line->Level++;
+      }
+    } else if (FormatTok->Previous->is(tok::r_paren)) {
+      FormatTok->setType(TT_RequiresClause);
+      SetClause = true;
     }
   }
+  if (!SetClause)
+    FormatTok->setType(TT_RequiresExpression);
+
   nextToken();
 
-  parseRequiresExpression(OriginalLevel);
+  parseRequiresClauseOrExpression(OriginalLevel);
 }
 
 bool UnwrappedLineParser::parseEnum() {

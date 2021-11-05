@@ -95,6 +95,8 @@ namespace format {
   TYPE(PureVirtualSpecifier)                                                   \
   TYPE(RangeBasedForLoopColon)                                                 \
   TYPE(RegexLiteral)                                                           \
+  TYPE(RequiresClause)                                                         \
+  TYPE(RequiresExpression)                                                     \
   TYPE(SelectorName)                                                           \
   TYPE(StartOfName)                                                            \
   TYPE(StatementAttributeLikeMacro)                                            \

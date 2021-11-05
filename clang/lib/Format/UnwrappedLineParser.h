@@ -116,7 +116,7 @@ private:
   bool parseStructLike();
   void parseConcept();
   void parseRequires();
-  void parseRequiresExpression(unsigned int OriginalLevel);
+  void parseRequiresClauseOrExpression(unsigned int OriginalLevel);
   void parseConstraintExpression(unsigned int OriginalLevel);
   void parseJavaEnumBody();
   // Parses a record (aka class) as a top level element. If ParseAsExpr is true,

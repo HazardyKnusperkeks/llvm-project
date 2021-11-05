@@ -22288,6 +22288,114 @@ TEST_F(FormatTest, ConceptsAndRequires) {
                "requires (std::invocable<F, std::invoke_result_t<Args>...>) "
                "struct constant;",
                Style);
+
+  verifyFormat("template <typename T> void func(T);");
+
+  verifyFormat("template <typename T>\n"
+               "requires std::signed_integral<T> && std::signed_integral<T>\n"
+               "void func(T);");
+  verifyFormat("template <typename T>\n"
+               "requires(std::is_integral_v<T> && std::is_signed_v<T>)\n"
+               "void func(T);");
+  verifyFormat("template <tyename T>\n"
+               "requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "}\n"
+               "func(T);");
+
+  verifyFormat("template <typename T>\n"
+               "requires std::signed_integral<T> && std::signed_integral<T>\n"
+               "void func(T) {}");
+  verifyFormat("template <typename T>\n"
+               "requires(std::is_integral_v<T> && std::is_signed_v<T>)\n"
+               "void func(T) {}");
+  verifyFormat("template <tyename T>\n"
+               "requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "}\n"
+               "func(T) {}");
+
+  verifyFormat(
+      "template <typename T> void func(T) requires std::signed_integral<T>;");
+  verifyFormat("template <typename T>\n"
+               "void func(T) requires std::signed_integral<T> && "
+               "std::signed_integral<T>;");
+  verifyFormat(
+      "template <typename T>\n"
+      "void func(T) requires(std::is_integral_v<T> && std::is_signed_v<T>);");
+  verifyFormat("template <typename T> void func(T) requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "};");
+
+  verifyFormat(
+      "template <typename T> void func(T) requires std::signed_integral<T> {}");
+  verifyFormat("template <typename T>\n"
+               "void func(T) requires std::signed_integral<T> && "
+               "std::signed_integral<T> {}");
+  verifyFormat(
+      "template <typename T>\n"
+      "void func(T) requires(std::is_integral_v<T> && std::is_signed_v<T>) {}");
+  verifyFormat("template <typename T> void func(T) requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "}\n"
+               "{}");
+
+  Style = getLLVMStyle();
+  Style.IndentRequires = true;
+
+  verifyFormat("template <typename T>\n"
+               "  requires std::signed_integral<T> && std::signed_integral<T>\n"
+               "void func(T);",
+               Style);
+  verifyFormat("template <typename T>\n"
+               "  requires(std::is_integral_v<T> && std::is_signed_v<T>)\n"
+               "void func(T);",
+               Style);
+  verifyFormat("template <tyename T>\n"
+               "  requires requires(T &&t) {\n"
+               "    typename T::size_type;\n"
+               "    { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "  }\n"
+               "func(T);",
+               Style);
+
+  verifyFormat("template <typename T>\n"
+               "  requires std::signed_integral<T> && std::signed_integral<T>\n"
+               "void func(T) {}",
+               Style);
+  verifyFormat("template <typename T>\n"
+               "  requires(std::is_integral_v<T> && std::is_signed_v<T>)\n"
+               "void func(T) {}",
+               Style);
+  verifyFormat("template <tyename T>\n"
+               "  requires requires(T &&t) {\n"
+               "    typename T::size_type;\n"
+               "    { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "  }\n"
+               "func(T) {}",
+               Style);
+
+  verifyFormat(
+      "template <typename T> void func(T) requires std::signed_integral<T> {}",
+      Style);
+  verifyFormat("template <typename T>\n"
+               "void func(T) requires std::signed_integral<T> && "
+               "std::signed_integral<T> {}",
+               Style);
+  verifyFormat(
+      "template <typename T>\n"
+      "void func(T) requires(std::is_integral_v<T> && std::is_signed_v<T>) {}",
+      Style);
+  verifyFormat("template <typename T> void func(T) requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "}\n"
+               "{}",
+               Style);
 }
 
 TEST_F(FormatTest, StatementAttributeLikeMacros) {
