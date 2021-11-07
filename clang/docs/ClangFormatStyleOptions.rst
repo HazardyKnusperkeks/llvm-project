@@ -3752,6 +3752,27 @@ the configuration (without a prefix: ``Auto``).
        IF (...)                        vs.    IF(...)
          <conditional-body>                     <conditional-body>
 
+  * ``bool AfterRequiresClause`` If ``true``, put space between requires keyword in a requires clause and
+    opening parentheses, if is are one.
+
+    .. code-block:: c++
+
+       true:                                  false:
+       template<typename T>            vs.    template<typename T>
+       requires (A<T> && B<T>)                requires(A<T> && B<T>)
+       ...                                    ...
+
+  * ``bool AfterRequiresExpression`` If ``true``, put space between requires keyword in a requires expression
+    and opening parentheses.
+
+    .. code-block:: c++
+
+       true:                                  false:
+       template<typename T>            vs.    template<typename T>
+       requires (T t) {                       requires(T t) {
+         ...                                    ...
+       }                                      }
+
   * ``bool BeforeNonEmptyParentheses`` If ``true``, put a space before opening parentheses only if the
     parentheses are not empty.
 

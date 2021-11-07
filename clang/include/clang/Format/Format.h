@@ -3367,6 +3367,25 @@ struct FormatStyle {
     ///      <conditional-body>                     <conditional-body>
     /// \endcode
     bool AfterIfMacros;
+    /// If ``true``, put space between requires keyword in a requires clause and
+    /// opening parentheses, if is are one.
+    /// \code
+    ///    true:                                  false:
+    ///    template<typename T>            vs.    template<typename T>
+    ///    requires (A<T> && B<T>)                requires(A<T> && B<T>)
+    ///    ...                                    ...
+    /// \endcode
+    bool AfterRequiresClause;
+    /// If ``true``, put space between requires keyword in a requires expression
+    /// and opening parentheses.
+    /// \code
+    ///    true:                                  false:
+    ///    template<typename T>            vs.    template<typename T>
+    ///    requires (T t) {                       requires(T t) {
+    ///      ...                                    ...
+    ///    }                                      }
+    /// \endcode
+    bool AfterRequiresExpression;
     /// If ``true``, put a space before opening parentheses only if the
     /// parentheses are not empty.
     /// \code
@@ -3380,6 +3399,7 @@ struct FormatStyle {
         : AfterControlStatements(false), AfterForeachMacros(false),
           AfterFunctionDeclarationName(false),
           AfterFunctionDefinitionName(false), AfterIfMacros(false),
+          AfterRequiresClause(false), AfterRequiresExpression(false),
           BeforeNonEmptyParentheses(false) {}
 
     bool operator==(const SpaceBeforeParensCustom &Other) const {
@@ -3389,6 +3409,8 @@ struct FormatStyle {
                  Other.AfterFunctionDeclarationName &&
              AfterFunctionDefinitionName == Other.AfterFunctionDefinitionName &&
              AfterIfMacros == Other.AfterIfMacros &&
+             AfterRequiresClause == Other.AfterRequiresClause &&
+             AfterRequiresExpression == Other.AfterRequiresExpression &&
              BeforeNonEmptyParentheses == Other.BeforeNonEmptyParentheses;
     }
   };

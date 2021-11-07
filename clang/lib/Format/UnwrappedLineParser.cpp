@@ -2477,6 +2477,13 @@ void UnwrappedLineParser::parseRequiresClauseOrExpression(
 void UnwrappedLineParser::parseConstraintExpression(
     unsigned int OriginalLevel) {
   // requires Id<T> && Id<T> || Id<T>
+
+  if (FormatTok->Tok.is(tok::kw_requires)) {
+    assert(FormatTok->Previous);
+    assert(FormatTok->Previous->is(TT_RequiresClause));
+    FormatTok->setType(TT_RequiresExpression);
+  }
+
   while (
       FormatTok->isOneOf(tok::identifier, tok::kw_requires, tok::coloncolon)) {
     nextToken();

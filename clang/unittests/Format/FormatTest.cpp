@@ -14300,6 +14300,36 @@ TEST_F(FormatTest, ConfigurableSpaceBeforeParens) {
   verifyFormat("X A::operator++ (T);", SomeSpace2);
   verifyFormat("int x = int (y);", SomeSpace2);
   verifyFormat("auto lambda = []() { return 0; };", SomeSpace2);
+
+  auto SpaceAfterRequires = getLLVMStyle();
+  SpaceAfterRequires.SpaceBeforeParens = FormatStyle::SBPO_Custom;
+  SpaceAfterRequires.SpaceBeforeParensOptions.AfterRequiresClause = true;
+  SpaceAfterRequires.SpaceBeforeParensOptions.AfterRequiresExpression = true;
+  verifyFormat(
+      "template <typename T> void func(T) requires(trait<T> && trait<T>) {\n"
+      "  typename T::size_type;\n"
+      "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+      "}\n"
+      "{}");
+  verifyFormat("template <typename T> void func(T) requires requires(T &&t) {\n"
+               "  typename T::size_type;\n"
+               "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+               "}\n"
+               "{}");
+  verifyFormat(
+      "template <typename T> void func(T) requires (trait<T> && trait<T>) {\n"
+      "  typename T::size_type;\n"
+      "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+      "}\n"
+      "{}",
+      SpaceAfterRequires);
+  verifyFormat(
+      "template <typename T> void func(T) requires requires (T &&t) {\n"
+      "  typename T::size_type;\n"
+      "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+      "}\n"
+      "{}",
+      SpaceAfterRequires);
 }
 
 TEST_F(FormatTest, SpaceAfterLogicalNot) {
@@ -22565,6 +22595,21 @@ TEST_F(FormatTest, ConceptsAndRequires) {
                "}\n"
                "{}",
                Style);
+
+  Style.SpaceBeforeParens = FormatStyle::SBPO_Custom;
+  Style.SpaceBeforeParensOptions.AfterRequiresClause = true;
+  Style.SpaceBeforeParensOptions.AfterRequiresExpression = true;
+  verifyFormat("template <typename T>\n"
+               "  requires (std::is_integral_v<T> && std::is_signed_v<T>)\n"
+               "void func(T) {}",
+               Style);
+  verifyFormat(
+      "template <typename T> void func(T) requires requires (T &&t) {\n"
+      "  typename T::size_type;\n"
+      "  { t.size() } -> std::same_as<typename T::size_type>;\n"
+      "}\n"
+      "{}",
+      Style);
 }
 
 TEST_F(FormatTest, StatementAttributeLikeMacros) {
