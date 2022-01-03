@@ -1057,6 +1057,9 @@ unsigned ContinuationIndenter::getNewLineColumn(const LineState &State) {
       return State.Stack[State.Stack.size() - 2].LastSpace;
     return State.FirstIndent;
   }
+
+  //Resort and refactor
+
   // Indent a closing parenthesis at the previous level if followed by a semi,
   // const, or opening brace. This allows indentations such as:
   //     foo(
