@@ -24546,6 +24546,14 @@ TEST_F(FormatTest, RemoveBraces) {
                Style);
 }
 
+TEST_F(FormatTest, MultilineLambdaInConditional) {
+  //Still to fix.
+  verifyFormat("auto aDecentLengthIdentifier =\n"
+               "    oneLongBooleanExpressionSoThatWeBreak\n"
+               "    ? [](){ ; return 5; }()\n"
+               "    : 2;");
+}
+
 TEST_F(FormatTest, AlignAfterOpenBracketBlockIndent) {
   auto Style = getLLVMStyle();
 
