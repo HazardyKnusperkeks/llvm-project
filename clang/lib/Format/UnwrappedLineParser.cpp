@@ -1537,9 +1537,12 @@ void UnwrappedLineParser::parseStructuralElement(IfStmtKind *IfKind,
     case tok::kw_concept:
       parseConcept();
       return;
-    case tok::kw_requires:
-      parseRequiresClause();
-      return;
+    case tok::kw_requires: {
+      bool Return = parseRequires();
+      if (Return)
+        return;
+      break;
+    }
     case tok::kw_enum:
       // Ignore if this is part of "template <enum ...".
       if (Previous && Previous->is(tok::less)) {
@@ -2781,6 +2784,120 @@ void UnwrappedLineParser::parseConcept() {
   if (FormatTok->Tok.is(tok::semi))
     nextToken();
   addUnwrappedLine();
+}
+
+/// \brief Parses a requires, decides if it is a clause or an expression.
+/// \pre The current token has to be the requires keyword.
+/// \returns If it parsed a clause.
+bool clang::format::UnwrappedLineParser::parseRequires() {
+  assert(FormatTok->Tok.is(tok::kw_requires) && "'requires' expected");
+  auto *PreviousNonComment = FormatTok->getPreviousNonComment();
+
+  auto ProbablyExpressionAfterAmpOrAmpAmp = [PreviousNonComment] {
+    assert(PreviousNonComment->isOneOf(tok::amp, tok::ampamp));
+    // This one is really tricky, since most tokens doesn't have a type yet.
+    // The & or && can be binary operators, then we have a requires
+    // expression. But they also can be r-value overload indicators, then
+    // we have a trailing requires clause. We try to detect the latter and
+    // default to the expressions.
+
+    auto PrevPrev = PreviousNonComment->getPreviousNonComment();
+    if (!PrevPrev) {
+      // No Token is invalid code, just do whatever you want.
+      return true;
+    }
+
+    switch (PrevPrev->Tok.getKind()) {
+    case tok::kw_const:
+      // void foo() const & requires...
+      return false;
+    case tok::r_paren:
+      // We differentiate after the switch.
+      break;
+    default:
+      // Is most definitly an expression.
+      return true;
+    }
+
+    auto RParen = PrevPrev;
+    auto LastParenContent = RParen->getPreviousNonComment();
+
+    if (!LastParenContent) {
+      // No Token is invalid code, just do whatever you want.
+      return true;
+    }
+
+    switch (LastParenContent->Tok.getKind()) {
+    case tok::r_paren:
+      // Nested parens, probably not a clause.
+      return true;
+    case tok::l_paren:
+      // FIXME: We need an annotation on the paren to really know if it is a
+      // function call:
+      // ... foo() && requires ...
+      // or a declaration:
+      // void foo() && requires ...
+      // there is no distinction possible right now. We go for the latter,
+      // because it's more likely to appear in code.
+      return false;
+    case tok::amp:
+    case tok::ampamp:
+    case tok::star:
+      // A function declaration where the parameter name is omitted:
+      // void foo(Type&&) && requires ...
+      return false;
+    case tok::identifier:
+      // We have to look further...
+      break;
+    default:
+      if (LastParenContent->isSimpleTypeSpecifier()) {
+        // Definetly function delcaration.
+        return false;
+      }
+      return true;
+    }
+
+    auto BeforeLastParenContent = LastParenContent->getPreviousNonComment();
+    if (!BeforeLastParenContent) {
+      // No Token is invalid code, just do whatever you want.
+      return true;
+    }
+
+    switch (BeforeLastParenContent->Tok.getKind()) {
+    case tok::l_paren:
+      // FIXME: We need an annotation on the paren to really know if it is a
+      // function call:
+      // ... foo(variable) && requires ...
+      // or a declaration:
+      // void foo(Type /*with omitted*/) && requires ...
+      // there is no distinction possible right now. We go for the former,
+      // because it's more likely to appear in code.
+      return true;
+    case tok::identifier:
+      // Two identifiers is, without macros, a parameter type and value, thus a
+      // clause.
+      return false;
+    default:
+      if (BeforeLastParenContent->isSimpleTypeSpecifier()) {
+        // Definetly function delcaration.
+        return false;
+      }
+      break;
+    }
+    return true;
+  };
+
+  if (PreviousNonComment &&
+      !PreviousNonComment->isOneOf(tok::greater, tok::r_paren, tok::kw_noexcept,
+                                   tok::kw_const,
+                                   TT_RequiresExpressionLBrace) &&
+      (!PreviousNonComment->isOneOf(tok::amp, tok::ampamp) ||
+       ProbablyExpressionAfterAmpOrAmpAmp())) {
+    parseRequiresExpression();
+    return false;
+  }
+  parseRequiresClause();
+  return true;
 }
 
 /// \brief Parses a requires clause.

@@ -133,6 +133,7 @@ private:
   bool parseEnum();
   bool parseStructLike();
   void parseConcept();
+  bool parseRequires();
   void parseRequiresClause();
   void parseRequiresExpression();
   void parseConstraintExpression();
